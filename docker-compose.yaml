@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: img_vr_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  kestra:
+    image: kestra/kestra:latest
+    container_name: kestra
+    environment:
+      KESTRA_DATABASE_URL: jdbc:postgresql://postgres:5432/kestra
+      KESTRA_DATABASE_USERNAME: admin
+      KESTRA_DATABASE_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: ap-south-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - "4566:4566"
+      - "4572:4572"
+    volumes:
+      - localstack_data:/var/lib/localstack
+
+volumes:
+  postgres_data:
+  localstack_data:
