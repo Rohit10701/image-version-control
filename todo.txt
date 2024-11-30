@@ -45,7 +45,7 @@ python:
 flow:
     post:api/image      
         -> original image -> s3 
-        -> bolb -> kestra task ( generating pixel string ) -> node.js -> create a room for git --> commitHash
+        -> file -> bolb -> kestra task ( generating pixel string ) -> node.js -> create a room for git --> commitHash
                         -> s3 for artifact ( whole repo )
                         -> db -> imageID, commitHash, artifact url, user_id
                         return db data for confirmation

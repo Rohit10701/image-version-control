@@ -1,0 +1,35 @@
+id: myflow
+namespace: company.team
+
+description: |
+  This flow installs the pip packages required for image processing in a Docker container, 
+  then uses Kestra's Python library to extract pixels to a string.
+
+inputs:
+  - id: file
+    type: STRING
+
+tasks:
+  - id: extract_pixels_to_string
+    type: io.kestra.plugin.scripts.python.Commands
+    namespaceFiles:
+      enabled: true
+      include:
+        - extract_pixels_to_string.py
+    containerImage: python:slim
+    warningOnStdErr: false
+    beforeCommands:
+      - pip install opencv-python-headless numpy kestra requests
+    commands:
+      - python extract_pixels_to_string.py
+    env:
+      KESTRA_INPUT_FILE_BASE64: "{{ trigger.body.file }}"
+
+  - id: log_image_data
+    type: io.kestra.plugin.core.log.Log
+    message: "Image String: {{ outputs.extract_pixels_to_string }}"
+
+triggers:
+  - id: webhook
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: 4wjtkzwVGBM9yKnjm3yv8r
