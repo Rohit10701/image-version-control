@@ -27,6 +27,7 @@ services:
     user: root
     ports:
       - "8080:8080"
+      - "3002:3002"
     command: server local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -43,8 +44,8 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
     ports:
-      - "4566:4566"
-      - "4572:4572"
+      - "4566:4566" #localstack
+      - "4572:4572" #s3
     volumes:
       - localstack_data:/var/lib/localstack
 
