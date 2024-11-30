@@ -1,0 +1,73 @@
+v0
+
+basic ui
+file upload
+editor
+git graph -> button not as command
+megring connecting arrow and confirming
+service worker -> 
+fcm
+
+
+
+
+
+
+backend
+
+frontend -> backend
+rest api :
+    post api/image
+    get api/image/:id/:versionId
+    post api/versioncontorl
+        form-data
+            image : bolb
+        command -> newbranch, merge, commit
+        commit messgae
+
+
+python:
+    new repo ( git init )
+    new branch
+    commit
+    merge
+
+
+    script:
+        get pixel info with ( certain range variations ) -> string
+        get image form pixel -> blob
+        
+    note: 
+        only base image ll be stored in s3
+
+
+
+flow:
+    post:api/image      
+        -> original image -> s3 
+        -> bolb -> kestra task ( generating pixel string ) -> node.js -> create a room for git --> commitHash
+                        -> s3 for artifact ( whole repo )
+                        -> db -> imageID, commitHash, artifact url, user_id
+                        return db data for confirmation
+    
+    get:api/image/:id/:versionId?artifact_url= ( enpint for single image click )
+        ->imageId, versionID -> kestra task ( get the artifact form url from db and get artifact form s3 with url reconstruct 
+                    image and return it ) -> frontend
+    
+    get:api/getcommitgraph ( workspcae)
+        -> user_id, workspace
+
+
+
+
+pixel -> +- 5 (000) -> 400 -> 000
+numpy
+
+
+db:
+    user -> pk user_id
+
+    workspace -> @workspace_id -> @user_id
+        workspace_id, user_id, artifact_url
+    
+    commit ->

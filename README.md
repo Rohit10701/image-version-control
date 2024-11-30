@@ -4,3 +4,5 @@
 # yml for kestra
 
 
+
+    pip install -r requirements.txt
