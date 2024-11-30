@@ -1,15 +1,18 @@
 {
-  "name": "root",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "docker:up" : "docker-compose up -d",
-    "docker:down" : "docker-compose down"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "lerna": "^8.1.9"
-  }
+	"name": "root",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"docker:up": "docker-compose up -d",
+		"docker:down": "docker-compose down",
+		"dev:backend": "npm run dev --prefix packages/backend",
+		"dev:frontend": "npm run dev --prefix packages/frontend",
+		"dev": "npm run docker:up && concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"lerna": "^8.1.9"
+	}
 }
