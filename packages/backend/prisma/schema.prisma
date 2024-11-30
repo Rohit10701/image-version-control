@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @default(cuid())
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  workspaces Workspace[]
+}
+
+model Workspace {
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  artifact_url String
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  branches     Branch[]
+}
+
+model Branch {
+  id           String    @id @default(cuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  name         String
+  commits      Commit[]
+  sourceMerges Merge[]   @relation("sourceMerges")
+  targetMerges Merge[]   @relation("targetMerges")
+}
+
+model Commit {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  message   String
+  merge     Merge[]
+}
+
+model Merge {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  sourceBranchId String
+  sourceBranch   Branch   @relation(name: "sourceMerges", fields: [sourceBranchId], references: [id])
+  targetBranchId String
+  targetBranch   Branch   @relation(name: "targetMerges", fields: [targetBranchId], references: [id])
+  commitId       String
+  commit         Commit   @relation(fields: [commitId], references: [id])
+}

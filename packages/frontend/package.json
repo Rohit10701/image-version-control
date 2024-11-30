@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "shadcn": "npx shadcn@latest add"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.1.2",

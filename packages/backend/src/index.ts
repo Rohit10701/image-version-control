@@ -1,7 +1,14 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+import { prettyJSON } from "hono/pretty-json";
 
-const app = new Hono();
+const app = new Hono().basePath("/api");
+
+app.use("*", prettyJSON());
+app.use("/api/*", cors());
+app.use("*", logger());
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");
@@ -31,7 +38,7 @@ app.get("/image/:id/:versionId", (c) => {
 app.get("/allImages/:imageId")
 
 app.post("/version-control", (c) => {
-
+	return c.text("Hello Hono!");
 })
 
 const port = 3000;
