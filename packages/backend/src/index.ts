@@ -7,7 +7,7 @@ import kestra from "./api/kestra.js";
 import type { Bindings, ImageBody } from "./types.js";
 
 
-const app = new Hono<Bindings>().basePath("/api");
+const app = new Hono<Bindings>();
 
 app.use("*", prettyJSON());
 app.use("/api/*", cors());
@@ -15,7 +15,7 @@ app.use("*", logger());
 
 
 app.get("/", (c) => {
-  return c.text("Hello Hono!");
+  return c.json({ message: "Hello, World!" });
 });
 
 
@@ -44,7 +44,7 @@ app.post("/version-control", (c) => {
 
 app.route("/kestra", kestra)
 
-const port = 5000;
+const port = 3002;
 console.log(`Server is running on http://localhost:${port}`);
 
 serve({
