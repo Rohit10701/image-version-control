@@ -92,27 +92,17 @@ export default function CommitHistory({
     }
   }
 
-  const drawArrow = (x1: number, y1: number, x2: number, y2: number, color: string) => {
-    const dx = x2 - x1
-    const dy = y2 - y1
-    const midX = (x1 + x2) / 2
-    const midY = (y1 + y2) / 2
-    const curveFactor = 0.3
-    const controlX = midX - dy * curveFactor
-    const controlY = midY + dx * curveFactor
-
-    return (
-      <g key={`arrow-${x1}-${y1}-${x2}-${y2}`}>
-        <path
-          d={`M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`}
-          fill="none"
-          stroke={color}
-          strokeWidth="2"
-          markerEnd="url(#arrowhead)"
-        />
-      </g>
-    )
-  }
+  const drawArrow = (x1: number, y1: number, x2: number, y2: number, color: string) => (
+    <g key={`arrow-${x1}-${y1}-${x2}-${y2}`}>
+      <path
+        d={`M ${x1} ${y1} L ${x2} ${y2}`}
+        fill="none"
+        stroke={color}
+        strokeWidth={2}
+        markerEnd="url(#arrowhead)"
+      />
+    </g>
+  )
 
   const handleDrag = (e: any, ui: any, commit: Commit) => {
     const updatedPositions = nodePositions.map(node =>

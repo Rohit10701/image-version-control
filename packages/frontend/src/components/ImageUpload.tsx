@@ -26,19 +26,28 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
+    if (file && file.type.startsWith('image/')) {
       handleFile(file)
+    } else {
+      // Optional: handle invalid file type error (if needed)
+      alert('Please select an image file.')
     }
   }
 
   const handleFile = (file: File) => {
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = (e: ProgressEvent<FileReader>) => {
       if (e.target?.result) {
         onUpload(e.target.result as string)
       }
     }
-    reader.readAsDataURL(file)
+
+    reader.onerror = () => {
+      // Handle file read errors here
+      alert('Error reading file')
+    }
+    console.log({file})
+    reader.readAsDataURL(file as Blob)
   }
 
   return (
@@ -55,12 +64,12 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
         type="file"
         accept="image/*"
         onChange={handleFileInput}
-        className="hidden"
+        // className="hidden"
         id="fileInput"
       />
-      <label htmlFor="fileInput">
+      {/* <label htmlFor="fileInput">
         <Button>Select Image</Button>
-      </label>
+      </label> */}
     </div>
   )
 }

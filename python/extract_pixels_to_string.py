@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-image = cv2.imread('./image.png')
+image = cv2.imread('./image copy.png')
 
 height, width, channels = image.shape
 
