@@ -34,7 +34,7 @@ python:
 
 
     script:
-        get pixel info with ( certain range variations ) -> txt as artifact
+        get pixel info with ( certain range variations ) -> string
         get image form pixel -> blob
         
     note: 
@@ -62,3 +62,12 @@ flow:
 
 pixel -> +- 5 (000) -> 400 -> 000
 numpy
+
+
+db:
+    user -> pk user_id
+
+    workspace -> @workspace_id -> @user_id
+        workspace_id, user_id, artifact_url
+    
+    commit ->
