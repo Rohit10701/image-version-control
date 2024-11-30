@@ -1,0 +1,125 @@
+
+id: myflow
+namespace: company.team
+
+description: |
+  This flow installs the pip packages required for image processing in a Docker container, 
+  then uses Kestra's Python library to extract pixels to a string.
+
+inputs:
+  - id: file
+    type: STRING
+
+tasks:
+  - id: extract_pixels_to_string
+    type: io.kestra.plugin.scripts.python.Commands
+    namespaceFiles:
+      enabled: true
+      include:
+        - extract_pixels_to_string.py
+    containerImage: python:slim
+    warningOnStdErr: false
+    beforeCommands:
+      - pip install opencv-python-headless numpy kestra requests GitPython boto3
+    commands:
+      - python extract_pixels_to_string.py
+    env:
+      KESTRA_INPUT_FILE_BASE64: "{{ trigger.body.file }}"
+      KESTRA_WORKSPACE_ID: "{{trigger.body.workspaceId}}"
+      S3_BUCKET_NAME:  localstack_kestra
+      AWS_ACCESS_KEY_ID:  test
+      AWS_SECRET_ACCESS_KEY:  test
+      LOCALSTACK_S3_URL: http://localhost:4572
+  - id: log_image_data
+    type: io.kestra.plugin.core.log.Log
+    message: "Image String: {{ outputs.extract_pixels_to_string }}"
+
+triggers:
+  - id: webhook
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: 4wjtkzwVGBM9yKnjm3yv8r
+
+
+
+
+
+
+
+import os
+import cv2
+import numpy as np
+import base64
+import boto3
+from git import Repo
+
+# Configuration
+BASE_DIR = os.path.join(os.getcwd(), "repo-uploads")
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+LOCALSTACK_S3_URL = os.getenv("LOCALSTACK_S3_URL")
+
+def process_base64_image(base64_string):
+    """Decode a Base64 image, extract metadata, and generate pixel string."""
+    base64_string = base64_string.split(",")[1] if "," in base64_string else base64_string
+    image_data = base64.b64decode(base64_string)
+    nparr = np.frombuffer(image_data, np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    if image is None:
+        raise ValueError("Failed to decode image from Base64 string.")
+    height, width, channels = image.shape
+    metadata = f"{height},{width},{channels}"
+    pixel_string = ''.join([f'{pixel:03}' for pixel in image.flatten()])
+    return metadata + "|" + pixel_string, image
+
+def save_to_git_repo(workspace_name, content):
+    """Save the processed data to a Git repository."""
+    os.makedirs(BASE_DIR, exist_ok=True)
+    repo_path = os.path.join(BASE_DIR, workspace_name)
+    if os.path.exists(repo_path):
+        for root, dirs, files in os.walk(repo_path, topdown=False):
+            for file in files:
+                os.remove(os.path.join(root, file))
+            for dir in dirs:
+                os.rmdir(os.path.join(root, dir))
+        os.rmdir(repo_path)
+    os.makedirs(repo_path, exist_ok=True)
+    file_path = os.path.join(repo_path, f"{workspace_name}.txt")
+    with open(file_path, 'w') as f:
+        f.write(content)
+    repo = Repo.init(repo_path)
+    repo.index.add([file_path])
+    repo.index.commit(f"Initial commit: Added {workspace_name}")
+    return repo_path
+
+def upload_repo_to_s3(repo_path, s3_client, bucket_name, prefix=""):
+    """Upload all files in a repository to S3 recursively."""
+    for root, _, files in os.walk(repo_path):
+        for file in files:
+            local_path = os.path.join(root, file)
+            s3_key = os.path.relpath(local_path, repo_path)
+            if prefix:
+                s3_key = os.path.join(prefix, s3_key)
+            with open(local_path, 'rb') as f:
+                s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=f)
+                print(f"Uploaded {s3_key} to S3.")
+
+def main():
+    input_base64_string = os.getenv("KESTRA_INPUT_FILE_BASE64")
+    if not input_base64_string:
+        raise ValueError("Base64 input string not found in environment variable.")
+    image_string, _ = process_base64_image(input_base64_string)
+    workspace_name = "image_processing_workspace"
+    repo_path = save_to_git_repo(workspace_name, image_string)
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        endpoint_url=LOCALSTACK_S3_URL
+    )
+    upload_repo_to_s3(repo_path, s3_client, S3_BUCKET_NAME, prefix=workspace_name)
+    print("Processing and upload completed.")
+    print(f"Git repository path: {repo_path}")
+
+if __name__ == "__main__":
+    main()
