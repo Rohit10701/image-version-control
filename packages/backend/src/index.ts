@@ -10,7 +10,7 @@ import type { ImageBody } from './types.js'
 const app = new Hono()
 
 app.use('*', prettyJSON())
-app.use('/api/*', cors())
+app.use('*', cors())
 app.use('*', logger())
 
 app.get('/', (c) => {
@@ -47,7 +47,7 @@ app.onError((err, c) => {
   return c.json({ message: 'Internal Server Error' }, 500)
 })
 
-const port = 3002
+const port = 3010
 console.log(`Server is running on http://localhost:${port}`)
 
 serve({

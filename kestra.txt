@@ -1,0 +1,128 @@
+
+id: myflow
+namespace: company.team
+
+description: |
+  This flow installs the pip packages required for image processing in a Docker container, 
+  then uses Kestra's Python library to extract pixels to a string.
+
+inputs:
+  - id: file
+    type: STRING
+
+  - id: payload
+    type: JSON
+    defaults: |
+      {"image_string": "Kestra Pen"}
+
+tasks:
+
+  - id: extract_pixels_to_string
+    type: io.kestra.plugin.scripts.python.Commands
+    namespaceFiles:
+      enabled: true
+      include:
+        - extract_pixels_to_string.py
+    containerImage: python:slim
+    warningOnStdErr: false
+    beforeCommands:
+      - pip install opencv-python-headless numpy kestra requests GitPython
+    commands:
+      - python extract_pixels_to_string.py
+    env:
+      KESTRA_INPUT_FILE_BASE64: "{{ trigger.body.file }}"
+      KESTRA_WORKSPACE_ID: "{{ trigger.body.workspaceId }}"
+      S3_BUCKET_NAME:  localstack_kestra
+      AWS_ACCESS_KEY_ID:  test
+      AWS_SECRET_ACCESS_KEY:  test
+      S3_REGION: ap-south-1
+      LOCALSTACK_S3_URL: http://localhost:4572
+
+
+  - id: send_data
+    type: io.kestra.plugin.core.http.Request
+    # localhost/127.0.0.1:3002
+    uri: http://127.0.0.1:3002/kestra/image-string
+    method: POST
+    contentType: application/json
+    body: "{{ inputs.payload }}"
+
+  - id: log_image_data
+    type: io.kestra.plugin.core.log.Log
+    message: "Image String: {{ outputs.extract_pixels_to_string }}"
+
+triggers:
+  - id: webhook
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: 4wjtkzwVGBM9yKnjm3yv8r
+
+
+import os
+import cv2
+import numpy as np
+import base64
+from io import BytesIO
+from kestra import Kestra
+import requests
+
+BACKEND_ENDPOINT="http://localhost:3002/kestra/image-string"
+
+KESTRA_WORKSPACE_ID = os.environ.get('KESTRA_WORKSPACE_ID')
+# Get the base64 string from the environment variable
+input_base64_string = os.environ.get('KESTRA_INPUT_FILE_BASE64')
+
+print(KESTRA_WORKSPACE_ID)
+
+# Check if the input base64 string is empty
+if not input_base64_string:
+    raise ValueError("Base64 input string not found in environment variable.")
+
+# Remove the "data:image/png;base64," part if it's included
+base64_string = input_base64_string.split(",")[1] if "," in input_base64_string else input_base64_string
+
+# Add padding to make the Base64 string length a multiple of 4
+padding = '=' * (4 - len(base64_string) % 4)
+base64_string += padding
+
+# Decode the base64 string to bytes
+image_data = base64.b64decode(base64_string)
+
+# Convert bytes to numpy array
+nparr = np.frombuffer(image_data, np.uint8)
+
+# Decode the numpy array into an image
+image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+if image is None:
+    raise ValueError("Failed to decode image from base64 string.")
+
+# Get image dimensions
+height, width, channels = image.shape
+
+# Flatten the image and create the pixel string
+flattened = image.flatten()
+pixel_string = ''.join([f'{pixel:03}' for pixel in flattened])
+
+# Metadata with dimensions
+metadata = f"{height},{width},{channels}"
+
+# Combine metadata and pixel string
+full_string = metadata + "|" + pixel_string
+
+# Prepare outputs for Kestra
+outputs = {
+    "image_string": full_string,
+    "workspace_id" : KESTRA_WORKSPACE_ID
+}
+
+# Print confirmation message
+print("Pixel string with metadata generated.")
+
+# response = requests.post("https://9x3m5dzn-3002.inc1.devtunnels.ms/kestra/image-string", json=outputs)
+# print(response)
+
+
+
+
+# Send output to Kestra
+Kestra.outputs(outputs)

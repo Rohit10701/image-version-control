@@ -1,0 +1,92 @@
+id: image_retrieval_flow
+namespace: company.team
+
+description: |
+  Retrieves an image from S3 based on imageId and versionId,
+  processes the image, and sends it to a local endpoint.
+
+inputs:
+  - id: imageId
+    type: STRING
+  - id: versionId
+    type: STRING
+  - id: artifact_url
+    type: STRING
+
+tasks:
+  - id: fetch_workspace_details
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    inputs:
+      url: jdbc:postgresql://172.17.0.1:5432/img_vr_db
+      user: admin
+      password: admin
+      sql: |
+        SELECT artifact_url 
+        FROM "Workspace" 
+        WHERE id = '{{ inputs.workspaceId }}'
+
+  - id: retrieve_s3_artifact
+    type: io.kestra.plugin.scripts.python.Commands
+    containerImage: python:slim
+    beforeCommands:
+      - pip install boto3 GitPython requests opencv-python-headless numpy
+    env:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      S3_ENDPOINT: http://localhost:4572
+      S3_BUCKET_NAME: localstack_kestra
+    commands:
+      - |
+        import boto3
+        import git
+        import os
+        import cv2
+        import numpy as np
+        import requests
+
+        # Reconstruct S3 URL from artifact_url
+        artifact_url = "{{ inputs.artifact_url }}"
+        
+        # Configure S3 client for LocalStack
+        s3_client = boto3.client(
+            's3', 
+            endpoint_url=os.environ['S3_ENDPOINT'],
+            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+            region_name='ap-south-1'
+        )
+
+        # Download the file from S3
+        bucket_name = os.environ['S3_BUCKET_NAME']
+        local_filename = 'downloaded_image.txt'
+        s3_client.download_file(bucket_name, artifact_url, local_filename)
+
+        # Read the pixel data
+        with open(local_filename, 'r') as f:
+            full_string = f.read()
+
+        metadata, pixel_string = full_string.split('|')
+        height, width, channels = map(int, metadata.split(','))
+
+        # Reconstruct the image
+        pixels = np.array([int(pixel_string[i:i+3]) for i in range(0, len(pixel_string), 3)])
+        pixels = pixels.reshape((height, width, channels))
+        pixels = np.clip(pixels, 0, 255).astype(np.uint8)
+
+        # Save the image
+        cv2.imwrite('reverted_image.jpg', pixels)
+
+        # Send image to localhost:3000
+        with open('reverted_image.jpg', 'rb') as image_file:
+            files = {'image': image_file}
+            response = requests.post('http://172.17.0.1:3000/api/images', files=files)
+            print(f"Image upload response: {response.text}")
+
+  - id: log_image_retrieval
+    type: io.kestra.plugin.core.log.Log
+    message: "Image retrieved and processed for ID: {{ inputs.imageId }}"
+
+triggers:
+  - id: api_trigger
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: retrieve_image_webhook

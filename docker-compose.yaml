@@ -18,7 +18,7 @@ services:
       - "6379:6379"
 
   kestra:
-    image: kestra/kestra:latest
+    build: .
     container_name: kestra
     environment:
       KESTRA_DATABASE_URL: jdbc:postgresql://postgres:5432/kestra
@@ -27,6 +27,7 @@ services:
     user: root
     ports:
       - "8080:8080"
+      - "3002:3002"
     command: server local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -43,11 +44,14 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
     ports:
-      - "4566:4566"
-      - "4572:4572"
+      - "4566:4566" #localstack
+      - "8081:8080"
     volumes:
       - localstack_data:/var/lib/localstack
 
 volumes:
   postgres_data:
   localstack_data:
+networks:
+    host:
+      driver: host

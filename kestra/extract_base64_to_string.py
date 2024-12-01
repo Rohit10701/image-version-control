@@ -6,11 +6,13 @@ from io import BytesIO
 from kestra import Kestra
 import requests
 
-BACKEND_ENDPOINT=http://localhost:5000/kestra/image_string
+BACKEND_ENDPOINT="http://localhost:3010/kestra/image-string"
 
-
+KESTRA_WORKSPACE_ID = os.environ.get('KESTRA_WORKSPACE_ID')
 # Get the base64 string from the environment variable
 input_base64_string = os.environ.get('KESTRA_INPUT_FILE_BASE64')
+
+print(KESTRA_WORKSPACE_ID)
 
 # Check if the input base64 string is empty
 if not input_base64_string:
@@ -50,16 +52,17 @@ full_string = metadata + "|" + pixel_string
 
 # Prepare outputs for Kestra
 outputs = {
-    'image_string': full_string
+    "image_string": full_string,
+    "workspace_id" : KESTRA_WORKSPACE_ID
 }
 
 # Print confirmation message
 print("Pixel string with metadata generated.")
 
-try:
-    response = requests.post(BACKEND_ENDPOINT, json=outputs)
-except:
-    print("Request failed with status code")
+# response = requests.post("https://9x3m5dzn-3002.inc1.devtunnels.ms/kestra/image-string", json=outputs)
+# print(response)
+
+
 
 
 # Send output to Kestra
