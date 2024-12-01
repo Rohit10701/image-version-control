@@ -20,4 +20,5 @@ cv2.imshow('Reverted Image', pixels)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
+
 print("Reverted image saved as 'reverted_image.jpg'.")
