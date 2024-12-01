@@ -9,7 +9,7 @@ import type { Bindings, ImageBody } from './types.js'
 const app = new Hono<Bindings>()
 
 app.use('*', prettyJSON())
-app.use('/api/*', cors())
+app.use('*', cors())
 app.use('*', logger())
 
 app.get('/', (c) => {
@@ -38,7 +38,7 @@ app.post('/version-control', (c) => {
 
 app.route('/kestra', kestra)
 
-const port = 3002
+const port = 3010
 console.log(`Server is running on http://localhost:${port}`)
 
 serve({

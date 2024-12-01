@@ -10,8 +10,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - localstack_nt
 
   redis:
     image: redis:7
@@ -20,7 +18,7 @@ services:
       - "6379:6379"
 
   kestra:
-    image: kestra/kestra:latest
+    build: .
     container_name: kestra
     environment:
       KESTRA_DATABASE_URL: jdbc:postgresql://postgres:5432/kestra
@@ -36,8 +34,6 @@ services:
       - /tmp:/tmp
     depends_on:
       - postgres
-    networks:
-      - localstack_nt
 
   localstack:
     image: localstack/localstack
@@ -52,15 +48,10 @@ services:
       - "8081:8080"
     volumes:
       - localstack_data:/var/lib/localstack
-    networks:
-      - localstack_nt
 
 volumes:
   postgres_data:
   localstack_data:
-
 networks:
-  localstack_nt:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+    host:
+      driver: host

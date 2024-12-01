@@ -1,62 +1,3 @@
-
-id: myflow
-namespace: company.team
-
-description: |
-  This flow installs the pip packages required for image processing in a Docker container, 
-  then uses Kestra's Python library to extract pixels to a string.
-
-inputs:
-  - id: file
-    type: STRING
-
-  - id: payload
-    type: JSON
-    defaults: |
-      {"image_string": "Kestra Pen"}
-
-tasks:
-
-  - id: extract_pixels_to_string
-    type: io.kestra.plugin.scripts.python.Commands
-    namespaceFiles:
-      enabled: true
-      include:
-        - extract_pixels_to_string.py
-    containerImage: python:slim
-    warningOnStdErr: false
-    beforeCommands:
-      - pip install opencv-python-headless numpy kestra requests GitPython
-    commands:
-      - python extract_pixels_to_string.py
-    env:
-      KESTRA_INPUT_FILE_BASE64: "{{ trigger.body.file }}"
-      KESTRA_WORKSPACE_ID: "{{ trigger.body.workspaceId }}"
-      S3_BUCKET_NAME:  localstack_kestra
-      AWS_ACCESS_KEY_ID:  test
-      AWS_SECRET_ACCESS_KEY:  test
-      S3_REGION: ap-south-1
-      LOCALSTACK_S3_URL: http://localhost:4572
-
-
-  - id: send_data
-    type: io.kestra.plugin.core.http.Request
-    # localhost/127.0.0.1:3002
-    uri: http://127.0.0.1:3002/kestra/image-string
-    method: POST
-    contentType: application/json
-    body: "{{ inputs.payload }}"
-
-  - id: log_image_data
-    type: io.kestra.plugin.core.log.Log
-    message: "Image String: {{ outputs.extract_pixels_to_string }}"
-
-triggers:
-  - id: webhook
-    type: io.kestra.plugin.core.trigger.Webhook
-    key: 4wjtkzwVGBM9yKnjm3yv8r
-
-
 import os
 import cv2
 import numpy as np
@@ -65,7 +6,7 @@ from io import BytesIO
 from kestra import Kestra
 import requests
 
-BACKEND_ENDPOINT="http://localhost:3002/kestra/image-string"
+BACKEND_ENDPOINT="http://localhost:3010/kestra/image-string"
 
 KESTRA_WORKSPACE_ID = os.environ.get('KESTRA_WORKSPACE_ID')
 # Get the base64 string from the environment variable
