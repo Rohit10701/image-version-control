@@ -44,7 +44,7 @@ tasks:
     uri: http://host.docker.internal:3010/kestra/image-string
     method: POST
     contentType: application/json
-    body: "{{ inputs.payload }}"
+    body: "{{ outputs.extract_pixels_to_string.vars }}"
 
   - id: log_image_data
     type: io.kestra.plugin.core.log.Log

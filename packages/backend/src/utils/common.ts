@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { simpleGit, type SimpleGit } from 'simple-git'
+import { simpleGit, type CommitResult, type SimpleGit } from 'simple-git'
 
 const BASE_FOLDER = 'repo-uploads'
 const BASE_DIR = path.join(process.cwd(), BASE_FOLDER)
