@@ -14,6 +14,9 @@ dependencies:
   '@hono/zod-validator':
     specifier: ^0.4.1
     version: 0.4.1(hono@4.6.12)(zod@3.23.8)
+  '@prisma/client':
+    specifier: ^6.0.0
+    version: 6.0.0(prisma@6.0.0)
   hono:
     specifier: ^4.6.12
     version: 4.6.12
@@ -918,13 +921,24 @@ packages:
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
     dev: false
 
+  /@prisma/client@6.0.0(prisma@6.0.0):
+    resolution: {integrity: sha512-tOBhG35ozqZ/5Y6B0TNOa6cwULUW8ijXqBXcgb12bfozqf6eGMyGs+jphywCsj6uojv5lAZZnxVSoLMVebIP+g==}
+    engines: {node: '>=18.18'}
+    requiresBuild: true
+    peerDependencies:
+      prisma: '*'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+    dependencies:
+      prisma: 6.0.0
+    dev: false
+
   /@prisma/debug@6.0.0:
     resolution: {integrity: sha512-eUjoNThlDXdyJ1iQ2d7U6aTVwm59EwvODb5zFVNJEokNoSiQmiYWNzZIwZyDmZ+j51j42/0iTaHIJ4/aZPKFRg==}
-    dev: true
 
   /@prisma/engines-version@5.23.0-27.5dbef10bdbfb579e07d35cc85fb1518d357cb99e:
     resolution: {integrity: sha512-JmIds0Q2/vsOmnuTJYxY4LE+sajqjYKhLtdOT6y4imojqv5d/aeVEfbBGC74t8Be1uSp0OP8lxIj2OqoKbLsfQ==}
-    dev: true
 
   /@prisma/engines@6.0.0:
     resolution: {integrity: sha512-ZZCVP3q22ifN6Ex6C8RIcTDBlRtMJS2H1ljV0knCiWNGArvvkEbE88W3uDdq/l4+UvyvHpGzdf9ZsCWSQR7ZQQ==}
@@ -934,7 +948,6 @@ packages:
       '@prisma/engines-version': 5.23.0-27.5dbef10bdbfb579e07d35cc85fb1518d357cb99e
       '@prisma/fetch-engine': 6.0.0
       '@prisma/get-platform': 6.0.0
-    dev: true
 
   /@prisma/fetch-engine@6.0.0:
     resolution: {integrity: sha512-j2m+iO5RDPRI7SUc7sHo8wX7SA4iTkJ+18Sxch8KinQM46YiCQD1iXKN6qU79C1Fliw5Bw/qDyTHaTsa3JMerA==}
@@ -942,13 +955,11 @@ packages:
       '@prisma/debug': 6.0.0
       '@prisma/engines-version': 5.23.0-27.5dbef10bdbfb579e07d35cc85fb1518d357cb99e
       '@prisma/get-platform': 6.0.0
-    dev: true
 
   /@prisma/get-platform@6.0.0:
     resolution: {integrity: sha512-PS6nYyIm9g8C03E4y7LknOfdCw/t2KyEJxntMPQHQZCOUgOpF82Ma60mdlOD08w90I3fjLiZZ0+MadenR3naDQ==}
     dependencies:
       '@prisma/debug': 6.0.0
-    dev: true
 
   /@smithy/abort-controller@3.1.8:
     resolution: {integrity: sha512-+3DOBcUn5/rVjlxGvUPKc416SExarAQ+Qe0bqk30YSUjbepwpS7QN0cyKUSifvLJhdMZ0WPzPP5ymut0oonrpQ==}
@@ -1497,7 +1508,6 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /get-tsconfig@4.8.1:
@@ -1530,7 +1540,6 @@ packages:
       '@prisma/engines': 6.0.0
     optionalDependencies:
       fsevents: 2.3.3
-    dev: true
 
   /resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}

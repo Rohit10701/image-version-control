@@ -1,15 +1,6 @@
-import {
-  PutObjectCommand,
-  S3Client,
-  type S3Client as S3ClientType,
-} from '@aws-sdk/client-s3'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import fs from 'fs'
-
-type S3UploadOptions = {
-  bucket: string
-  fileName: string
-  repoPath: string
-}
+import path from 'path'
 
 type S3ClientCredentials = {
   s3Url: string
@@ -33,23 +24,42 @@ export const initializeS3Client = ({
   })
 }
 
-export const uploadToS3 = async (
-  s3Client: S3ClientType,
-  options: S3UploadOptions
-) => {
-  try {
-    const { bucket, fileName, repoPath } = options
+export async function uploadRepoToS3(
+  repoPath: string,
+  s3Client: S3Client,
+  bucketName: string,
+  prefix: string = ''
+): Promise<string> {
+  // List all files in the repository
+  const files = fs.readdirSync(repoPath, {
+    recursive: true,
+    withFileTypes: false,
+    encoding: 'utf8',
+  })
 
-    const s3UploadParams = {
-      Bucket: bucket,
-      Key: fileName,
-      Body: fs.readFileSync(repoPath),
+  for (const file of files) {
+    const fullPath = path.join(repoPath, file)
+    const stats = fs.statSync(fullPath)
+
+    if (stats.isFile()) {
+      const s3Key = prefix ? `${prefix}/${file}` : file
+
+      try {
+        const fileBuffer = fs.readFileSync(fullPath)
+
+        await s3Client.send(
+          new PutObjectCommand({
+            Bucket: bucketName,
+            Key: s3Key,
+            Body: fileBuffer,
+          })
+        )
+
+        console.log(`Uploaded ${s3Key} to S3`)
+      } catch (error) {
+        console.error(`Failed to upload ${file} to S3:`, error)
+      }
     }
-
-    const s3Command = new PutObjectCommand(s3UploadParams)
-    await s3Client.send(s3Command)
-  } catch (error) {
-    console.log(error)
-    throw new Error('Error uploading to S3')
   }
+  return `${bucketName}/${repoPath}`
 }

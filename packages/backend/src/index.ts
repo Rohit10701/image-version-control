@@ -1,12 +1,13 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import kestra from './api/kestra.js'
-import type { Bindings, ImageBody } from './types.js'
+import type { ImageBody } from './types.js'
 
-const app = new Hono<Bindings>()
+const app = new Hono()
 
 app.use('*', prettyJSON())
 app.use('/api/*', cors())
@@ -37,6 +38,14 @@ app.post('/version-control', (c) => {
 })
 
 app.route('/kestra', kestra)
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    // Get the custom response
+    return err.getResponse()
+  }
+  return c.json({ message: 'Internal Server Error' }, 500)
+})
 
 const port = 3002
 console.log(`Server is running on http://localhost:${port}`)
