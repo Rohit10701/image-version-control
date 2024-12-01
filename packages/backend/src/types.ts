@@ -9,4 +9,5 @@ export type ImageBody = {
 
 export type KestraImageStringPostBody = {
 	image_string: string
+	workspaceId: string
 }
