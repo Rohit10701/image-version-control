@@ -14,7 +14,7 @@ export async function saveToGitRepo(
 
   // Define repo path
   const repoPath = path.join(BASE_DIR, workspaceName)
-  const s3repoPath = path.join(BASE_FOLDER, workspaceName)
+  const s3RepoPath = path.join(BASE_FOLDER, workspaceName)
   // Remove existing repo if it exists
   try {
     fs.rmSync(repoPath, { recursive: true, force: true })
@@ -37,5 +37,5 @@ export async function saveToGitRepo(
   await git.add(filePath)
   await git.commit(`Initial commit: Added ${workspaceName}`)
 
-  return s3repoPath
+  return s3RepoPath
 }

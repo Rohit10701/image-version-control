@@ -11,8 +11,11 @@
 		"dev:frontend": "npm run dev --prefix packages/frontend",
 		"dev": "npm run docker:up && concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
 	},
-	"dependencies": {},
+	"dependencies": {
+		"react-image-crop": "^11.0.7"
+	},
 	"devDependencies": {
+		"@types/react-image-crop": "^9.0.2",
 		"lerna": "^8.1.9"
 	}
 }
