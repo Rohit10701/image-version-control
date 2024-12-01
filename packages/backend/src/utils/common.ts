@@ -8,7 +8,7 @@ const BASE_DIR = path.join(process.cwd(), BASE_FOLDER)
 export async function saveToGitRepo(
   workspaceName: string,
   content: string
-): Promise<string> {
+): Promise<{ s3RepoPath: string; commitHash: string }> {
   // Ensure base directory exists
   fs.mkdirSync(BASE_DIR, { recursive: true })
 
@@ -35,7 +35,7 @@ export async function saveToGitRepo(
   // Initialize repo and commit
   await git.init()
   await git.add(filePath)
-  await git.commit(`Initial commit: Added ${workspaceName}`)
+  const result = await git.commit(`Initial commit: Added ${workspaceName}`)
 
-  return s3RepoPath
+  return { s3RepoPath, commitHash: result.commit }
 }

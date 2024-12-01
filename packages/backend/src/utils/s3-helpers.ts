@@ -1,4 +1,8 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import {
+  HeadBucketCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import fs from 'fs'
 import path from 'path'
 
@@ -28,39 +32,60 @@ export async function uploadRepoToS3(
   repoPath: string,
   s3Client: S3Client,
   bucketName: string,
+  workspaceName: string,
   prefix: string = ''
 ): Promise<string> {
   const REPO_DIR = path.join(process.cwd(), repoPath)
-  // List all files in the repository
-  const files = fs.readdirSync(REPO_DIR, {
-    recursive: true,
-    withFileTypes: false,
-    encoding: 'utf8',
-  })
 
-  for (const file of files) {
-    const fullPath = path.join(REPO_DIR, file)
-    const stats = fs.statSync(fullPath)
+  // Create the full S3 prefix path
+  const s3Prefix = `repo-uploads/${workspaceName}`
 
-    if (stats.isFile()) {
-      const s3Key = prefix ? `${prefix}/${file}` : file
+  // Ensure the bucket exists first
+  try {
+    await s3Client.send(new HeadBucketCommand({ Bucket: bucketName }))
+  } catch (error) {
+    throw new Error(`Bucket ${bucketName} does not exist or cannot be accessed`)
+  }
 
-      try {
-        const fileBuffer = fs.readFileSync(fullPath)
+  const files = walkDirectory(REPO_DIR)
 
-        await s3Client.send(
-          new PutObjectCommand({
-            Bucket: bucketName,
-            Key: s3Key,
-            Body: fileBuffer,
-          })
-        )
+  // Upload files
+  for (const fullPath of files) {
+    // Generate S3 key by replacing the base repo path and adding the prefix
+    const relativePath = path.relative(REPO_DIR, fullPath)
+    const s3Key = `${s3Prefix}/${relativePath}`
 
-        console.log(`Uploaded ${s3Key} to S3`)
-      } catch (error) {
-        console.error(`Failed to upload ${file} to S3:`, error)
-      }
+    console.log({ s3Key, relativePath })
+
+    try {
+      const fileBuffer = fs.readFileSync(fullPath)
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: bucketName,
+          Key: s3Key,
+          Body: fileBuffer,
+        })
+      )
+      console.log(`Uploaded ${s3Key} to S3`)
+    } catch (error) {
+      console.error(`Failed to upload ${relativePath} to S3:`, error)
     }
   }
   return `${bucketName}/${repoPath}`
+}
+
+const walkDirectory = (dir: string): string[] => {
+  let results: string[] = []
+  const list = fs.readdirSync(dir, { withFileTypes: true })
+
+  for (const file of list) {
+    const fullPath = path.join(dir, file.name)
+    if (file.isDirectory()) {
+      results = results.concat(walkDirectory(fullPath))
+    } else {
+      results.push(fullPath)
+    }
+  }
+
+  return results
 }

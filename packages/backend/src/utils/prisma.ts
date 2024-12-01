@@ -20,3 +20,28 @@ export const createNewWorkspace = async (
     },
   })
 }
+
+export const createNewMasterBranch = async (
+  prisma: PrismaClient,
+  data: { branchName: string; workspaceId: string }
+) => {
+  return await prisma.branch.create({
+    data: {
+      name: data.branchName,
+      workspaceId: data.workspaceId,
+    },
+  })
+}
+
+export const createInitialCommit = async (
+  prisma: PrismaClient,
+  data: { commitHash: string; branchId: string; message: string }
+) => {
+  return await prisma.commit.create({
+    data: {
+      id: data.commitHash,
+      message: data.message,
+      branchId: data.branchId,
+    },
+  })
+}
