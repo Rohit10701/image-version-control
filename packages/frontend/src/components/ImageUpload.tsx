@@ -7,6 +7,8 @@ interface ImageUploadProps {
 
 export default function ImageUpload({ onUpload }: ImageUploadProps) {
   const [dragging, setDragging] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -21,16 +23,25 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
     e.preventDefault()
     setDragging(false)
     const file = e.dataTransfer.files[0]
-    handleFile(file)
+    if (file && file.type.startsWith('image/')) {
+      setError(null)
+      setSuccess(false)
+      handleFile(file)
+    } else {
+      setError('Please drop a valid image file.')
+      setSuccess(false)
+    }
   }
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith('image/')) {
+      setError(null)
+      setSuccess(false)
       handleFile(file)
     } else {
-      // Optional: handle invalid file type error (if needed)
-      alert('Please select an image file.')
+      setError('Please select a valid image file.')
+      setSuccess(false)
     }
   }
 
@@ -39,15 +50,15 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
     reader.onload = (e: ProgressEvent<FileReader>) => {
       if (e.target?.result) {
         onUpload(e.target.result as string)
+        setSuccess(true)
       }
     }
 
     reader.onerror = () => {
-      // Handle file read errors here
-      alert('Error reading file')
+      setError('Error reading file')
+      setSuccess(false)
     }
-    console.log({file})
-    reader.readAsDataURL(file as Blob)
+    reader.readAsDataURL(file)
   }
 
   return (
@@ -64,12 +75,14 @@ export default function ImageUpload({ onUpload }: ImageUploadProps) {
         type="file"
         accept="image/*"
         onChange={handleFileInput}
-        // className="hidden"
+        className="hidden"
         id="fileInput"
       />
-      {/* <label htmlFor="fileInput">
-        <Button>Select Image</Button>
-      </label> */}
+      <label htmlFor="fileInput">
+        <Button type="button" className="cursor-pointer">Select Image</Button>
+      </label>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {success && <p className="text-green-500 mt-2">Image uploaded successfully!</p>}
     </div>
   )
 }

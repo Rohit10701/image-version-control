@@ -103,7 +103,7 @@ export default function ImageVersionControl() {
         <ImageUpload onUpload={handleImageUpload} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="flex flex-col gap-2">
             <Workspace image={currentImage!} onChange={handleImageChange} />
             <CommitForm onCommit={handleCommit} />
           </div>

@@ -1,5 +1,9 @@
-import { useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+'use client'
+
+import { useState, useCallback } from 'react'
+
+import FilerobotImageEditor, { TABS, TOOLS } from 'react-filerobot-image-editor'
+import Image from 'next/image'
 
 interface WorkspaceProps {
   image: string
@@ -7,49 +11,89 @@ interface WorkspaceProps {
 }
 
 export default function Workspace({ image, onChange }: WorkspaceProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isEditorOpen, setIsEditorOpen] = useState(true)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        const img = new Image()
-        img.onload = () => {
-          canvas.width = img.width
-          canvas.height = img.height
-          ctx.drawImage(img, 0, 0)
-        }
-        img.src = image
-      }
-    }
-  }, [image])
+  const onComplete = useCallback((editedImageObject: any) => {
+    setIsEditorOpen(false)
+    onChange(editedImageObject.imageBase64)
+  }, [onChange])
 
-  const applyFilter = (filter: string) => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.filter = filter
-        const img = new Image()
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0)
-          onChange(canvas.toDataURL())
-        }
-        img.src = image
-      }
-    }
+  const onClose = () => {
+    setIsEditorOpen(false)
+  }
+
+  const config = {
+    source: image,
+    onComplete,
+    onClose,
+    annotationsCommon: {
+      fill: '#ff0000'
+    },
+    Text: { text: 'Text...' },
+    Crop: {
+      presetsItems: [
+        {
+          titleKey: 'classicTv',
+          descriptionKey: '4:3',
+          ratio: 4 / 3,
+        },
+        {
+          titleKey: 'cinemascope',
+          descriptionKey: '21:9',
+          ratio: 21 / 9,
+        },
+      ],
+      presetsFolders: [
+        {
+          titleKey: 'socialMedia',
+          groups: [
+            {
+              titleKey: 'facebook',
+              items: [
+                {
+                  titleKey: 'profile',
+                  width: 180,
+                  height: 180,
+                  descriptionKey: 'fbProfileSize',
+                },
+                {
+                  titleKey: 'coverPhoto',
+                  width: 820,
+                  height: 312,
+                  descriptionKey: 'fbCoverPhotoSize',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.RESIZE],
+    defaultTabId: TABS.ADJUST,
+    defaultToolId: TOOLS.CROP,
   }
 
   return (
-    <div className="mb-4">
-      <canvas ref={canvasRef} className="max-w-full mb-4" />
-      <div className="flex space-x-2">
-        <Button onClick={() => applyFilter('grayscale(100%)')}>Grayscale</Button>
-        <Button onClick={() => applyFilter('sepia(100%)')}>Sepia</Button>
-        <Button onClick={() => applyFilter('invert(100%)')}>Invert</Button>
-        <Button onClick={() => applyFilter('none')}>Reset</Button>
-      </div>
+    <div className="workspace">
+      {isEditorOpen && (
+        <FilerobotImageEditor
+          {...config}
+          onSave={onComplete}
+          onClose={onClose}
+        />
+      )}
+      {!isEditorOpen && (
+      <>
+	      <Image src={image} alt="image" width={500}
+          height={300} style={{ maxWidth: '100%', height: 'auto' }} />
+        <button
+          onClick={() => setIsEditorOpen(true)}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Edit Image
+        </button>
+      </>
+      )}
     </div>
   )
 }
