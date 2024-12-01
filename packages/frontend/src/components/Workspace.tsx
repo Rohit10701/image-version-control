@@ -2,8 +2,10 @@
 
 import { useState, useCallback } from 'react'
 
-import FilerobotImageEditor, { TABS, TOOLS } from 'react-filerobot-image-editor'
+import { TABS, TOOLS } from 'react-filerobot-image-editor'
+const FilerobotImageEditor = dynamic(() => import('react-filerobot-image-editor'), { ssr: false })
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 
 interface WorkspaceProps {
   image: string

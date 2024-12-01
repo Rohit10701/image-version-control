@@ -5,38 +5,36 @@ import ImageUpload from '../components/ImageUpload'
 import Workspace from '../components/Workspace'
 import CommitForm from '../components/CommitForm'
 import CommitHistory from '../components/CommitHistory'
-import { Commit, Branch } from '../types'
+import { ICommit, IBranch } from '../types'
 
 export default function ImageVersionControl() {
   const [image, setImage] = useState<string | null>(null)
-  const [commits, setCommits] = useState<Commit[]>([])
-  const [branches, setBranches] = useState<Branch[]>([{ name: 'main', head: 0 }])
+  const [commits, setCommits] = useState<ICommit[]>([])
+  const [branches, setBranches] = useState<IBranch[]>([{ name: 'main'}])
   const [currentBranch, setCurrentBranch] = useState('main')
   const [currentImage, setCurrentImage] = useState<string | null>(null)
 
   const handleImageUpload = (uploadedImage: string) => {
     setImage(uploadedImage)
     setCurrentImage(uploadedImage)
-    const initialCommit: Commit = {
-      id: 1,
+    const initialCommit: ICommit = {
+      id: "1",
       message: 'Initial commit',
-      timestamp: new Date().toISOString(),
-      image: uploadedImage,
-      branch: 'main',
-      parentId: null
+      branchId: "1",
+      createdAt: new Date(Date.now()),
+      updatedAt: new Date(Date.now()),
     }
     setCommits([initialCommit])
-    setBranches([{ name: 'main', head: 1 }])
+    setBranches([{ name: 'main' }])
   }
 
   const handleCommit = (message: string) => {
-    const newCommit: Commit = {
-      id: commits.length + 1,
+    const newCommit: ICommit = {
+      id: (commits.length + 1).toString(),
       message,
-      timestamp: new Date().toISOString(),
-      image: currentImage!,
-      branch: currentBranch,
-      parentId: branches.find(b => b.name === currentBranch)?.head || null
+      branchId: currentBranch,
+      createdAt: new Date(Date.now()),
+      updatedAt: new Date(Date.now()),
     }
     setCommits([...commits, newCommit])
     setBranches(branches.map(b =>
@@ -58,7 +56,7 @@ export default function ImageVersionControl() {
       alert('Branch name already exists. Please choose a different name.')
       return
     }
-    const newBranch: Branch = { name, head: fromCommitId }
+    const newBranch: IBranch = { name, id: fromCommitId.toString() }
     setBranches([...branches, newBranch])
     setCurrentBranch(name)
   }
@@ -68,13 +66,12 @@ export default function ImageVersionControl() {
     const toCommit = commits.find(c => c.id === branches.find(b => b.name === toBranch)?.head)
 
     if (fromCommit && toCommit) {
-      const mergeCommit: Commit = {
-        id: commits.length + 1,
+      const mergeCommit: ICommit = {
+        id: (commits.length + 1).toString(),
         message: `Merge ${fromBranch} into ${toBranch}`,
-        timestamp: new Date().toISOString(),
-        image: fromCommit.image,
-        branch: toBranch,
-        parentId: toCommit.id
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now()),
+        branchId: toCommit.id
       }
       setCommits([...commits, mergeCommit])
       setBranches(branches.map(b =>
