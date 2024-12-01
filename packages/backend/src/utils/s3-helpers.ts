@@ -24,21 +24,23 @@ export const initializeS3Client = ({
   })
 }
 
+
 export async function uploadRepoToS3(
   repoPath: string,
   s3Client: S3Client,
   bucketName: string,
   prefix: string = ''
 ): Promise<string> {
+const REPO_DIR = path.join(process.cwd(), repoPath)
   // List all files in the repository
-  const files = fs.readdirSync(repoPath, {
+  const files = fs.readdirSync(REPO_DIR, {
     recursive: true,
     withFileTypes: false,
     encoding: 'utf8',
   })
 
   for (const file of files) {
-    const fullPath = path.join(repoPath, file)
+    const fullPath = path.join(REPO_DIR, file)
     const stats = fs.statSync(fullPath)
 
     if (stats.isFile()) {

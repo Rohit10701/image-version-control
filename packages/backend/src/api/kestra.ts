@@ -15,20 +15,19 @@ kestra.use('*', prettyJSON())
 kestra.use('*', cors())
 kestra.use('*', logger())
 
+const DATABASE_URL="postgresql://admin:admin@localhost:5432/img_vr_db?schema=public"
+const LOCALSTACK_S3_URL="http://localhost:4572"
+const AWS_ACCESS_KEY_ID="test"
+const AWS_SECRET_ACCESS_KEY="test"
 kestra.post('/image-string', async (c) => {
   const { image_string, workspace_id } =
     await c.req.json<KestraImageStringPostBody>()
+	console.log({image_string})
 
-  const {
-    DATABASE_URL,
-    LOCALSTACK_S3_URL,
-    AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY,
-  } = env<KestraEnv>(c)
 
   const S3_BUCKET_NAME = 'localstackkestra'
 
-  if (!image_string) {
+  if (!image_string || !workspace_id) {
     throw new HTTPException(400, {
       message: 'Image string from kestra is not found',
     })

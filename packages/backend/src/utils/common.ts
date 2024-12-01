@@ -2,7 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { simpleGit, type SimpleGit } from 'simple-git'
 
-const BASE_DIR = path.join(process.cwd(), 'repo-uploads')
+const BASE_FOLDER = 'repo-uploads'
+const BASE_DIR = path.join(process.cwd(), BASE_FOLDER)
 
 export async function saveToGitRepo(
   workspaceName: string,
@@ -13,7 +14,7 @@ export async function saveToGitRepo(
 
   // Define repo path
   const repoPath = path.join(BASE_DIR, workspaceName)
-
+  const s3repoPath = path.join(BASE_FOLDER, workspaceName)
   // Remove existing repo if it exists
   try {
     fs.rmSync(repoPath, { recursive: true, force: true })
@@ -36,5 +37,5 @@ export async function saveToGitRepo(
   await git.add(filePath)
   await git.commit(`Initial commit: Added ${workspaceName}`)
 
-  return repoPath
+  return s3repoPath
 }
