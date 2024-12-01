@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { simpleGit, type SimpleGit } from 'simple-git'
+import { simpleGit, type CommitResult, type SimpleGit } from 'simple-git'
 
 const BASE_FOLDER = 'repo-uploads'
 const BASE_DIR = path.join(process.cwd(), BASE_FOLDER)
@@ -35,7 +35,8 @@ export async function saveToGitRepo(
   // Initialize repo and commit
   await git.init()
   await git.add(filePath)
-  await git.commit(`Initial commit: Added ${workspaceName}`)
+  const res : CommitResult = await git.commit(`Initial commit: Added ${workspaceName}`)
+  console.log({res})
 
   return s3RepoPath
 }

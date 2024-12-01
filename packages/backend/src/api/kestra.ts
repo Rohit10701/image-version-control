@@ -16,7 +16,7 @@ kestra.use('*', logger())
 
 const DATABASE_URL =
   'postgresql://admin:admin@localhost:5432/img_vr_db?schema=public'
-const LOCALSTACK_S3_URL = 'http://localhost:4572'
+const LOCALSTACK_S3_URL = 'http://localhost:4566'
 const AWS_ACCESS_KEY_ID = 'test'
 const AWS_SECRET_ACCESS_KEY = 'test'
 
