@@ -72,13 +72,14 @@ export async function uploadRepoToS3(
     const stats = fs.statSync(fullPath)
 
     if (stats.isFile()) {
+      const s3Key = path.join(repoPath, file)
       try {
         const fileBuffer = fs.readFileSync(fullPath)
 
         await s3Client.send(
           new PutObjectCommand({
             Bucket: bucketName,
-            Key: fullPath,
+            Key: s3Key,
             Body: fileBuffer,
           })
         )
@@ -92,4 +93,3 @@ export async function uploadRepoToS3(
 
   return `${bucketName}/${repoPath}`
 }
-

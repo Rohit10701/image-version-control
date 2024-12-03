@@ -49,6 +49,8 @@ kestra.post('/image-string', async (c) => {
       S3_BUCKET_NAME
     )
 
+    console.log({ commitHash, artifactUrl })
+
     return c.json({
       status: 'success',
       artifact_url: artifactUrl,

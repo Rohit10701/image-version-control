@@ -3,7 +3,6 @@ namespace: company.team
 
 description: Retrieves an image from S3 based on imageId and versionId, processes the image, and sends it to a local endpoint.
 
-
 tasks:
   - id: fetch_workspace_details
     type: io.kestra.plugin.jdbc.postgresql.Query
@@ -31,11 +30,11 @@ tasks:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       S3_ENDPOINT: http://host.docker.internal:4566
-      S3_BUCKET_NAME: localstack_kestra
+      S3_BUCKET_NAME: localstackkestra
       ART_URL: "{{trigger.body.artifact_url}}"
-      COMMIT_HASH : "{{trigger.body.commit_hash}}"
+      COMMIT_HASH: "{{trigger.body.commit_hash}}"
       WORKSPACE_ID: "{{trigger.body.workspaceId}}"
-      
+
   - id: log_image_retrieval
     type: io.kestra.plugin.core.log.Log
     message: "Image retrieved and processed for ID: {{ trigger.body.workspaceId }}"
@@ -43,4 +42,4 @@ tasks:
 triggers:
   - id: api_trigger
     type: io.kestra.plugin.core.trigger.Webhook
-    key: retrieve_image_webhook 
+    key: retrieve_image_webhook
