@@ -83,6 +83,9 @@ Kestra enables our system to:
 - **PostgreSQL**: Metadata and version tracking
 - **LocalStack S3**: Image and artifact storage
 
+
+![image-version-control](https://github.com/user-attachments/assets/d96526aa-f25d-4f04-b3c0-52e9fe48bd5d)
+
 ## Development Environment
 
 ### Prerequisites
